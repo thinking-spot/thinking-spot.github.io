@@ -3,174 +3,322 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thinking Spot</title>
+    <title>Thinking Spot - A Place to Think</title>
+    <meta name="description" content="A minimal, distraction-free space for thinking on the internet.">
+    <meta name="author" content="Thinking Spot">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='none' stroke='%23888' stroke-width='2'/></svg>">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
-        body {
-            background-color: #0a0a0a;
-            color: #e0e0e0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+
+        body, html {
+            width: 100%;
             height: 100vh;
             overflow: hidden;
+            background-color: #0a0a0a;
+            font-family: Helvetica, Arial, sans-serif;
+            color: #888;
+            transition: background-color 2s ease;
             cursor: none;
         }
-        
-        #cursor {
-            width: 8px;
-            height: 8px;
-            background-color: rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
+
+        body.inactive {
+            background-color: #050505;
+        }
+
+        /* Custom cursor */
+        #custom-cursor {
             position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
             pointer-events: none;
-            transition: transform 0.1s ease;
             z-index: 9999;
-        }
-        
-        #thinking-area {
-            position: absolute;
-            top: 50%;
-            left: 50%;
+            transition: transform 0.15s ease-out;
             transform: translate(-50%, -50%);
-            font-size: 18px;
-            line-height: 1.6;
-            color: rgba(255, 255, 255, 0.7);
-            max-width: 600px;
-            text-align: center;
-            opacity: 0;
-            transition: opacity 2s ease;
         }
-        
-        #breathing-indicator {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-            animation: breathe 4s ease-in-out infinite;
-            opacity: 0.3;
-        }
-        
-        @keyframes breathe {
-            0%, 100% { transform: scale(0.8); }
-            50% { transform: scale(1.2); }
-        }
-        
-        #time {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.2);
-            font-variant-numeric: tabular-nums;
-        }
-        
+
+        /* Welcome message */
         #welcome {
-            position: absolute;
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             font-size: 24px;
-            color: rgba(255, 255, 255, 0.6);
+            color: rgba(255, 255, 255, 0.4);
             opacity: 1;
             transition: opacity 3s ease;
+            pointer-events: none;
+            text-align: center;
+        }
+
+        #welcome.fade {
+            opacity: 0;
+        }
+
+        /* Thought container */
+        #thought-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 66.67vw;
+            height: 50vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .thought {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 10px;
+            transition: opacity 1s ease, transform 0.5s ease;
+        }
+
+        .thought.h1 {
+            font-size: 36px;
+        }
+
+        .thought.h2 {
+            font-size: 28px;
+        }
+
+        .thought.h3 {
+            font-size: 20px;
+        }
+
+        .thought.text {
+            font-size: 16px;
+        }
+
+        .thought.fading {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        /* Breathing indicator */
+        #breathing-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.2;
+            }
+        }
+
+        /* Time display */
+        #time {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Hidden input */
+        #hidden-input {
+            position: absolute;
+            left: -9999px;
+            opacity: 0;
         }
     </style>
 </head>
 <body>
-    <div id="cursor"></div>
-    <div id="welcome">Welcome to your thinking spot</div>
-    <div id="thinking-area"></div>
+    <!-- Custom cursor -->
+    <div id="custom-cursor"></div>
+
+    <!-- Welcome message -->
+    <div id="welcome">
+        Welcome to your thinking space.<br>
+        Just start typing.
+    </div>
+
+    <!-- Thought container -->
+    <div id="thought-container"></div>
+
+    <!-- Breathing indicator -->
     <div id="breathing-indicator"></div>
+
+    <!-- Time display -->
     <div id="time"></div>
-    
+
+    <!-- Hidden input to capture typing -->
+    <input type="text" id="hidden-input" autocomplete="off">
+
     <script>
         // Custom cursor
-        const cursor = document.getElementById('cursor');
-        let mouseX = 0, mouseY = 0;
-        let cursorX = 0, cursorY = 0;
-        
+        const cursor = document.getElementById('custom-cursor');
+        let mouseX = 0;
+        let mouseY = 0;
+        let cursorX = 0;
+        let cursorY = 0;
+
         document.addEventListener('mousemove', (e) => {
             mouseX = e.clientX;
             mouseY = e.clientY;
         });
-        
+
         function animateCursor() {
             cursorX += (mouseX - cursorX) * 0.1;
             cursorY += (mouseY - cursorY) * 0.1;
-            
-            cursor.style.left = cursorX - 4 + 'px';
-            cursor.style.top = cursorY - 4 + 'px';
-            
+            cursor.style.left = cursorX + 'px';
+            cursor.style.top = cursorY + 'px';
             requestAnimationFrame(animateCursor);
         }
         animateCursor();
-        
-        // Fade out welcome message
+
+        // Welcome message fade
         setTimeout(() => {
-            document.getElementById('welcome').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('welcome').style.display = 'none';
-            }, 3000);
+            document.getElementById('welcome').classList.add('fade');
         }, 3000);
-        
+
         // Time display
         function updateTime() {
             const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
+            let hours = now.getHours();
             const minutes = now.getMinutes().toString().padStart(2, '0');
-            document.getElementById('time').textContent = `${hours}:${minutes}`;
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            document.getElementById('time').textContent = `${hours}:${minutes} ${ampm}`;
         }
         updateTime();
         setInterval(updateTime, 1000);
-        
-        // Keyboard interaction for thoughts
-        let thinkingArea = document.getElementById('thinking-area');
+
+        // Thought capture
+        const hiddenInput = document.getElementById('hidden-input');
+        const thoughtContainer = document.getElementById('thought-container');
         let currentThought = '';
-        let isTyping = false;
-        
-        document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                currentThought = '';
-                thinkingArea.textContent = '';
-                thinkingArea.style.opacity = '0';
-                isTyping = false;
-            } else if (e.key !== ' ' || currentThought.length > 0) {
-                if (!isTyping) {
-                    isTyping = true;
-                    thinkingArea.style.opacity = '1';
-                }
-                currentThought += e.key;
-                thinkingArea.textContent = currentThought;
-            }
+        let thoughts = [];
+        let inactivityTimer;
+        let fadeTimer;
+
+        // Always focus the hidden input
+        document.addEventListener('click', () => {
+            hiddenInput.focus();
         });
-        
+
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' && currentThought.length > 0) {
-                currentThought = currentThought.slice(0, -1);
-                thinkingArea.textContent = currentThought;
-                if (currentThought.length === 0) {
-                    thinkingArea.style.opacity = '0';
-                    isTyping = false;
+            hiddenInput.focus();
+            
+            // Reset inactivity
+            clearTimeout(inactivityTimer);
+            clearTimeout(fadeTimer);
+            document.body.classList.remove('inactive');
+            
+            if (e.key === 'Enter') {
+                if (currentThought.trim()) {
+                    addThought(currentThought);
+                    currentThought = '';
+                    hiddenInput.value = '';
                 }
+                // Clear all thoughts on Enter
+                setTimeout(() => {
+                    clearThoughts();
+                }, 100);
             }
         });
-        
-        // Ambient interaction
-        let ambientTimeout;
-        document.addEventListener('mousemove', () => {
-            document.body.style.backgroundColor = '#0a0a0a';
-            clearTimeout(ambientTimeout);
-            ambientTimeout = setTimeout(() => {
-                document.body.style.backgroundColor = '#080808';
-            }, 10000);
+
+        hiddenInput.addEventListener('input', (e) => {
+            currentThought = e.target.value;
+            updateCurrentThought();
         });
+
+        function getThoughtClass(text) {
+            if (text.length < 20) return 'h1';
+            if (text.length < 40) return 'h2';
+            if (text.length < 60) return 'h3';
+            return 'text';
+        }
+
+        function updateCurrentThought() {
+            if (thoughts.length === 0 && currentThought) {
+                const thoughtDiv = document.createElement('div');
+                thoughtDiv.className = `thought ${getThoughtClass(currentThought)}`;
+                thoughtDiv.textContent = currentThought;
+                thoughtContainer.appendChild(thoughtDiv);
+                thoughts.push(thoughtDiv);
+            } else if (thoughts.length > 0) {
+                const lastThought = thoughts[thoughts.length - 1];
+                lastThought.textContent = currentThought;
+                lastThought.className = `thought ${getThoughtClass(currentThought)}`;
+            }
+
+            // Start fade timer
+            clearTimeout(fadeTimer);
+            fadeTimer = setTimeout(() => {
+                fadeThoughts();
+            }, 3000);
+        }
+
+        function addThought(text) {
+            const thoughtDiv = document.createElement('div');
+            thoughtDiv.className = `thought ${getThoughtClass(text)}`;
+            thoughtDiv.textContent = text;
+            thoughtContainer.appendChild(thoughtDiv);
+            thoughts.push(thoughtDiv);
+
+            // Remove old thoughts if too many
+            if (thoughts.length > 10) {
+                const oldThought = thoughts.shift();
+                oldThought.classList.add('fading');
+                setTimeout(() => oldThought.remove(), 1000);
+            }
+        }
+
+        function fadeThoughts() {
+            thoughts.forEach((thought, index) => {
+                setTimeout(() => {
+                    thought.classList.add('fading');
+                }, index * 100);
+            });
+            
+            setTimeout(() => {
+                clearThoughts();
+            }, thoughts.length * 100 + 1000);
+        }
+
+        function clearThoughts() {
+            thoughts.forEach(thought => thought.remove());
+            thoughts = [];
+        }
+
+        // Inactivity timer
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            document.body.classList.remove('inactive');
+            
+            inactivityTimer = setTimeout(() => {
+                document.body.classList.add('inactive');
+            }, 10000); // 10 seconds
+        }
+
+        document.addEventListener('mousemove', resetInactivityTimer);
+        document.addEventListener('keydown', resetInactivityTimer);
+        resetInactivityTimer();
+
+        // Initial focus
+        hiddenInput.focus();
     </script>
 </body>
 </html>
